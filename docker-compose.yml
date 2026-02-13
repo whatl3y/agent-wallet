@@ -1,0 +1,29 @@
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: apps/agent/Dockerfile
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    volumes:
+      - ./mcp-servers.json:/app/apps/agent/mcp-servers.json:ro
+
+  mcp-aave:
+    build:
+      context: .
+      dockerfile: apps/mcp-aave/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
+  mcp-swap:
+    build:
+      context: .
+      dockerfile: apps/mcp-swap/Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env

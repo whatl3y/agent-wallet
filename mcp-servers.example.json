@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "aave": {
+      "type": "http",
+      "url": "http://mcp-aave:3000/mcp"
+    },
+    "swap": {
+      "type": "http",
+      "url": "http://mcp-swap:3001/mcp"
+    }
+  }
+}
