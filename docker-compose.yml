@@ -18,6 +18,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - PORT=3000
 
   mcp-swap:
     build:
@@ -27,3 +29,5 @@ services:
       - "3001:3001"
     env_file:
       - .env
+    environment:
+      - PORT=3001
