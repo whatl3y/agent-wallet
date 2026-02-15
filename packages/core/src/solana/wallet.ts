@@ -14,3 +14,18 @@ export function getSolanaKeypair(): Keypair {
   keypair = Keypair.fromSecretKey(bs58.decode(privateKey));
   return keypair;
 }
+
+export function createSolanaKeypairFromKey(privateKeyBase58: string): Keypair {
+  return Keypair.fromSecretKey(bs58.decode(privateKeyBase58));
+}
+
+export function generateSolanaKeys(): {
+  privateKey: string;
+  publicKey: string;
+} {
+  const kp = Keypair.generate();
+  return {
+    privateKey: bs58.encode(kp.secretKey),
+    publicKey: kp.publicKey.toBase58(),
+  };
+}

@@ -5,5 +5,16 @@ export {
   getEVMChainConfigByChainId,
 } from "./chains.js";
 export { getPublicClient } from "./provider.js";
-export { getEVMAccount, getWalletClient } from "./wallet.js";
-export { sendEVMTransaction, sendEVMTransactions } from "./transaction.js";
+export {
+  getEVMAccount,
+  getWalletClient,
+  createEVMAccount,
+  createWalletClientForAccount,
+  generateEVMKeys,
+} from "./wallet.js";
+export {
+  sendEVMTransaction,
+  sendEVMTransactions,
+  sendEVMTransactionWith,
+  sendEVMTransactionsWith,
+} from "./transaction.js";

@@ -1,3 +1,4 @@
+import { getAddress } from "viem";
 import {
   mainnet,
   polygon,
@@ -17,9 +18,11 @@ export interface SwapChainConfig {
 /**
  * 0x AllowanceHolder contract — same address on all EVM chains.
  * Tokens must be approved to this address for 0x swaps.
+ * Normalized to proper EIP-55 checksum.
  */
-export const ZEROX_ALLOWANCE_HOLDER =
-  "0x0000000000001fF3684f28c67538d4D072C22734" as const;
+export const ZEROX_ALLOWANCE_HOLDER = getAddress(
+  "0x0000000000001fF3684f28c67538d4D072C22734"
+);
 
 /**
  * Native token sentinel address used by 0x API.

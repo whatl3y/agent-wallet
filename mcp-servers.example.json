@@ -7,6 +7,22 @@
     "swap": {
       "type": "http",
       "url": "http://mcp-swap:3001/mcp"
+    },
+    "hyperliquid": {
+      "type": "http",
+      "url": "http://mcp-hyperliquid:3002/mcp"
+    },
+    "gmx": {
+      "type": "http",
+      "url": "http://mcp-gmx:3003/mcp"
+    },
+    "curve": {
+      "type": "http",
+      "url": "http://mcp-curve:3004/mcp"
+    },
+    "convex": {
+      "type": "http",
+      "url": "http://mcp-convex:3005/mcp"
     }
   }
 }

@@ -4,7 +4,7 @@ import {
   type WalletClient,
   type Account,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { getEVMChainConfig } from "./chains.js";
 
 let account: Account | null = null;
@@ -20,6 +20,39 @@ export function getEVMAccount(): Account {
 
   account = privateKeyToAccount(privateKey as `0x${string}`);
   return account;
+}
+
+export function createEVMAccount(privateKey: string): Account {
+  return privateKeyToAccount(privateKey as `0x${string}`);
+}
+
+export function generateEVMKeys(): {
+  privateKey: string;
+  address: string;
+} {
+  const pk = generatePrivateKey();
+  const acct = privateKeyToAccount(pk);
+  return { privateKey: pk, address: acct.address };
+}
+
+export function createWalletClientForAccount(
+  acct: Account,
+  chainName: string
+): WalletClient {
+  const config = getEVMChainConfig(chainName);
+  const rpcUrl = process.env[config.rpcEnvVar];
+
+  if (!rpcUrl) {
+    throw new Error(
+      `Missing RPC URL: set ${config.rpcEnvVar} environment variable`
+    );
+  }
+
+  return createWalletClient({
+    account: acct,
+    chain: config.chain,
+    transport: http(rpcUrl),
+  });
 }
 
 export function getWalletClient(chainName: string): WalletClient {

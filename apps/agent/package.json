@@ -7,18 +7,23 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node build/index.js",
+    "start:telegram": "node build/telegram/index.js",
     "clean": "rm -rf build"
   },
   "dependencies": {
     "@agent-wallet/core": "workspace:*",
+    "@nktkas/hyperliquid": "npm:@deeeed/hyperliquid-node20@0.23.1-node20.1",
     "viem": "^2.23.0",
     "@anthropic-ai/claude-agent-sdk": "^0.2.41",
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "better-sqlite3": "^11.0.0",
     "bunyan": "^1.8.15",
     "dotenv": "^17.0.0",
+    "grammy": "^1.30.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
     "@types/bunyan": "^1.8.11",
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0"

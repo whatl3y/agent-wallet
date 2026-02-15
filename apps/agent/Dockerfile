@@ -1,4 +1,5 @@
 FROM node:22-slim AS build
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@10.4.0 --activate
 
 WORKDIR /app
@@ -42,7 +43,7 @@ COPY --from=build /app/apps/agent/build/ ./apps/agent/build/
 RUN pnpm install --frozen-lockfile --prod
 
 # Run as non-root user (required: SDK rejects bypassPermissions as root)
-RUN useradd -m agent && chown -R agent:agent /app
+RUN useradd -m agent && mkdir -p /app/data && chown -R agent:agent /app
 USER agent
 
 WORKDIR /app/apps/agent

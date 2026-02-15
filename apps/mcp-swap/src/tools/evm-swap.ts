@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { formatUnits } from "viem";
+import { formatUnits, getAddress } from "viem";
 import {
   getChainConfig,
   SUPPORTED_CHAINS,
@@ -189,12 +189,12 @@ export function registerEvmSwapTools(server: McpServer) {
           buyDecimals
         );
 
-        // Add the swap transaction
+        // Add the swap transaction (normalize address to proper EIP-55 checksum)
         transactions.push({
           step: stepNum,
           type: "swap",
           description: `Swap ${sellAmount} ${sellSymbol} for ~${formattedBuyAmount} ${buySymbol}`,
-          to: quote.transaction.to,
+          to: getAddress(quote.transaction.to),
           data: quote.transaction.data,
           value: quote.transaction.value,
         });

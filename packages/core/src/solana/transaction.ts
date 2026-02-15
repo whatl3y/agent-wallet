@@ -1,5 +1,6 @@
 import {
   Connection,
+  Keypair,
   Transaction,
   VersionedTransaction,
   sendAndConfirmTransaction,
@@ -69,6 +70,67 @@ export async function signAndSendSerializedTransaction(
   const transaction = VersionedTransaction.deserialize(txBuffer);
 
   transaction.sign([keypair]);
+
+  const signature = await connection.sendRawTransaction(
+    transaction.serialize(),
+    { skipPreflight: false, preflightCommitment: "confirmed" }
+  );
+
+  const latestBlockhash = await connection.getLatestBlockhash();
+  await connection.confirmTransaction(
+    {
+      signature,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    },
+    "confirmed"
+  );
+
+  return {
+    signature,
+    cluster: clusterName,
+    status: "success",
+  };
+}
+
+export async function sendSOLWith(
+  kp: Keypair,
+  clusterName: string,
+  to: string,
+  amountSOL: number
+): Promise<SolanaTransactionResult> {
+  const connection = getConnection(clusterName);
+
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: kp.publicKey,
+      toPubkey: new PublicKey(to),
+      lamports: Math.round(amountSOL * LAMPORTS_PER_SOL),
+    })
+  );
+
+  const signature = await sendAndConfirmTransaction(connection, transaction, [
+    kp,
+  ]);
+
+  return {
+    signature,
+    cluster: clusterName,
+    status: "success",
+  };
+}
+
+export async function signAndSendSerializedTransactionWith(
+  kp: Keypair,
+  clusterName: string,
+  serializedTransaction: string
+): Promise<SolanaTransactionResult> {
+  const connection = getConnection(clusterName);
+
+  const txBuffer = Buffer.from(serializedTransaction, "base64");
+  const transaction = VersionedTransaction.deserialize(txBuffer);
+
+  transaction.sign([kp]);
 
   const signature = await connection.sendRawTransaction(
     transaction.serialize(),

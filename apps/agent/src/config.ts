@@ -4,9 +4,6 @@ export const config = {
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
   model: process.env.CLAUDE_MODEL || "claude-sonnet-4-5-20250929",
 
-  evmPrivateKey: process.env.EVM_PRIVATE_KEY || "",
-  solanaPrivateKey: process.env.SOLANA_PRIVATE_KEY || "",
-
   mcpServersConfigPath:
     process.env.MCP_SERVERS_CONFIG_PATH || "./mcp-servers.json",
 
@@ -18,4 +15,16 @@ export const config = {
     | "warn"
     | "error"
     | "fatal",
+
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
+  walletEncryptionKey: process.env.WALLET_ENCRYPTION_KEY || "",
+  sqliteDbPath: process.env.SQLITE_DB_PATH || "./data/agent-wallet.db",
+  telegramAllowedUserIds: process.env.TELEGRAM_ALLOWED_USER_IDS
+    ? new Set(
+        process.env.TELEGRAM_ALLOWED_USER_IDS.split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+          .map((id) => parseInt(id, 10))
+      )
+    : null,
 };
