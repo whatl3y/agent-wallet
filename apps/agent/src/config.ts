@@ -18,7 +18,7 @@ export const config = {
 
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || "",
   walletEncryptionKey: process.env.WALLET_ENCRYPTION_KEY || "",
-  sqliteDbPath: process.env.SQLITE_DB_PATH || "./data/agent-wallet.db",
+  databaseUrl: process.env.DATABASE_URL || "",
   telegramAllowedUserIds: process.env.TELEGRAM_ALLOWED_USER_IDS
     ? new Set(
         process.env.TELEGRAM_ALLOWED_USER_IDS.split(",")

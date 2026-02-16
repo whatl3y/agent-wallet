@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { config } from "../config.js";
 import { logger } from "../logger.js";
+import { migrateToLatest } from "../database/migrate.js";
 import { createBot } from "./bot.js";
 
 async function main() {
@@ -24,6 +25,19 @@ async function main() {
     );
     process.exit(1);
   }
+
+  if (!config.databaseUrl) {
+    console.error(
+      "Error: DATABASE_URL environment variable is required"
+    );
+    process.exit(1);
+  }
+
+  // Run migrations before starting the bot
+  await migrateToLatest({
+    databaseUrl: config.databaseUrl,
+    log: logger,
+  });
 
   const bot = createBot();
 

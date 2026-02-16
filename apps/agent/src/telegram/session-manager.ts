@@ -2,7 +2,14 @@ import {
   createEVMAccount,
   createSolanaKeypairFromKey,
 } from "@agent-wallet/core";
-import { UserStore } from "./user-store.js";
+import {
+  getUser,
+  createUser,
+  getMessages,
+  addMessage,
+  clearMessages,
+} from "../models/users.js";
+import type { UserRecord } from "../models/users.js";
 import { logger } from "../logger.js";
 
 export interface ConversationMessage {
@@ -30,19 +37,22 @@ const APPROVAL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 export class UserSessionManager {
   private sessions = new Map<number, UserSession>();
-  private userStore: UserStore;
+  private encryptionKey: string;
 
-  constructor(dbPath: string, encryptionKey: string) {
-    this.userStore = new UserStore(dbPath, encryptionKey);
+  constructor(encryptionKey: string) {
+    this.encryptionKey = encryptionKey;
   }
 
-  getOrCreateSession(telegramUserId: number): UserSession {
+  async getOrCreateSession(telegramUserId: number): Promise<UserSession> {
     const cached = this.sessions.get(telegramUserId);
     if (cached) return cached;
 
-    let userRecord = this.userStore.getUser(telegramUserId);
+    let userRecord: UserRecord | null = await getUser(
+      telegramUserId,
+      this.encryptionKey
+    );
     if (!userRecord) {
-      userRecord = this.userStore.createUser(telegramUserId);
+      userRecord = await createUser(telegramUserId, this.encryptionKey);
       logger.info(
         { telegramUserId, evmAddress: userRecord.evmAddress },
         "Created new wallet for Telegram user"
@@ -52,7 +62,7 @@ export class UserSessionManager {
     const evmAccount = createEVMAccount(userRecord.evmPrivateKey);
     const solanaKeypair = createSolanaKeypairFromKey(userRecord.solanaPrivateKey);
 
-    const savedMessages = this.userStore.getMessages(telegramUserId, MAX_HISTORY_MESSAGES);
+    const savedMessages = await getMessages(telegramUserId, MAX_HISTORY_MESSAGES);
     const conversationHistory: ConversationMessage[] = savedMessages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -77,15 +87,15 @@ export class UserSessionManager {
     return session;
   }
 
-  addToHistory(
+  async addToHistory(
     telegramUserId: number,
     message: ConversationMessage
-  ): void {
+  ): Promise<void> {
     const session = this.sessions.get(telegramUserId);
     if (!session) return;
 
     session.conversationHistory.push(message);
-    this.userStore.addMessage(telegramUserId, message.role, message.content);
+    await addMessage(telegramUserId, message.role, message.content);
 
     // Trim by message count
     while (session.conversationHistory.length > MAX_HISTORY_MESSAGES) {
@@ -103,10 +113,10 @@ export class UserSessionManager {
     }
   }
 
-  clearHistory(telegramUserId: number): void {
+  async clearHistory(telegramUserId: number): Promise<void> {
     const session = this.sessions.get(telegramUserId);
     if (session) session.conversationHistory = [];
-    this.userStore.clearMessages(telegramUserId);
+    await clearMessages(telegramUserId);
   }
 
   requestApproval(

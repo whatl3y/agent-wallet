@@ -8,7 +8,6 @@ export function createBot(): Bot {
   const bot = new Bot(config.telegramBotToken);
 
   const sessionManager = new UserSessionManager(
-    config.sqliteDbPath,
     config.walletEncryptionKey
   );
 

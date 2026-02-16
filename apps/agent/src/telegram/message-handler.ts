@@ -145,7 +145,7 @@ export async function handleMessage(
   const text = ctx.message?.text;
   if (!text) return;
 
-  const session = sessionManager.getOrCreateSession(userId);
+  const session = await sessionManager.getOrCreateSession(userId);
 
   // Handle /start command
   if (text === "/start") {
@@ -225,7 +225,7 @@ export async function handleMessage(
   // Handle /clear command — reset conversation history and cancel active query
   if (text === "/clear") {
     activeQueries.delete(userId);
-    sessionManager.clearHistory(userId);
+    await sessionManager.clearHistory(userId);
     await ctx.reply("Conversation history cleared.");
     return;
   }
@@ -253,15 +253,10 @@ export async function handleMessage(
     await ctx.reply(text, keyboard ? { reply_markup: keyboard } : {});
   };
 
-  // Create per-user tool server with approval deps
+  // Create per-user tool server
   const userToolServer = createUserToolServer(
     session.evmAccount,
-    session.solanaKeypair,
-    {
-      telegramUserId: userId,
-      sendMessage,
-      sessionManager,
-    }
+    session.solanaKeypair
   );
 
   const externalServers = loadMcpServers();
@@ -395,7 +390,6 @@ export async function handleMessage(
       const check = setInterval(() => {
         const idleMs = Date.now() - lastActivityTs;
         // Don't fire while the user is deciding on an approval
-        const session = sessionManager.getOrCreateSession(userId);
         if (session.pendingApprovals.size > 0) {
           // Reset the clock — approval waits are user-driven
           lastActivityTs = Date.now();
@@ -430,8 +424,8 @@ export async function handleMessage(
 
     if (responseText.trim()) {
       // Save exchange to conversation history
-      sessionManager.addToHistory(userId, { role: "user", content: text });
-      sessionManager.addToHistory(userId, {
+      await sessionManager.addToHistory(userId, { role: "user", content: text });
+      await sessionManager.addToHistory(userId, {
         role: "assistant",
         content: responseText.trim(),
       });

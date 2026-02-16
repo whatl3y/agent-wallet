@@ -6,7 +6,7 @@ Every transaction requires explicit user approval before signing.
 
 Supports two interfaces:
 - **CLI** — Interactive stdin/stdout chat loop with a single wallet from environment variables
-- **Telegram Bot** — Multi-user bot that auto-generates per-user wallets (encrypted at rest in SQLite), with inline keyboard buttons for transaction approvals. Only responds to DMs.
+- **Telegram Bot** — Multi-user bot that auto-generates per-user wallets (encrypted at rest in PostgreSQL), with inline keyboard buttons for transaction approvals. Only responds to DMs.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ agent-wallet/
 └── apps/
     ├── agent/            # @agent-wallet/agent — Claude-powered CLI + Telegram agent
     │   ├── tools/        # Custom wallet tools (balance, send, execute calldata)
-    │   ├── telegram/     # Telegram bot: per-user wallets, inline approval, SQLite store
+    │   ├── telegram/     # Telegram bot: per-user wallets, inline approval, PostgreSQL store
     │   ├── agent.ts      # Claude Agent SDK query() setup (CLI)
     │   ├── approval.ts   # Human-in-the-loop transaction approval (CLI)
     │   └── mcp-config.ts # External MCP server configuration loader
@@ -248,10 +248,10 @@ Add these to your `.env`:
 ```bash
 TELEGRAM_BOT_TOKEN=your-bot-token-from-botfather
 WALLET_ENCRYPTION_KEY=a-strong-random-passphrase
-SQLITE_DB_PATH=./data/agent-wallet.db
+DATABASE_URL=postgres://agentwallet:agentwallet@localhost:5432/agentwallet
 ```
 
-`WALLET_ENCRYPTION_KEY` is used to encrypt per-user private keys at rest in SQLite (AES-256-GCM). Choose a strong passphrase — losing it means the stored keys are unrecoverable.
+`WALLET_ENCRYPTION_KEY` is used to encrypt per-user private keys at rest in PostgreSQL (AES-256-GCM). Choose a strong passphrase — losing it means the stored keys are unrecoverable.
 
 #### 3. Run the bot
 
@@ -424,5 +424,5 @@ To test the agent:
 | `PORT` | MCP server HTTP port (default: `3000` for mcp-aave, `3001` for mcp-swap, `3002` for mcp-hyperliquid, `3003` for mcp-gmx) |
 | `API_KEY` | MCP server Bearer token auth (optional, leave empty for open access) |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather (required for Telegram bot) |
-| `WALLET_ENCRYPTION_KEY` | Passphrase for encrypting per-user wallet keys in SQLite (required for Telegram bot) |
-| `SQLITE_DB_PATH` | SQLite database path for user wallets (default: `./data/agent-wallet.db`) |
+| `WALLET_ENCRYPTION_KEY` | Passphrase for encrypting per-user wallet keys in the database (required for Telegram bot) |
+| `DATABASE_URL` | PostgreSQL connection string (e.g. `postgres://user:pass@host:5432/db`) |

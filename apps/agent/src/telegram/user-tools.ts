@@ -5,9 +5,7 @@ import {
   parseUnits,
   encodeFunctionData,
   erc20Abi,
-  formatEther,
 } from "viem";
-import { InlineKeyboard } from "grammy";
 import { ExchangeClient, HttpTransport } from "@nktkas/hyperliquid";
 import {
   createEVMAccount,
@@ -26,7 +24,6 @@ import {
   SUPPORTED_EVM_CHAINS,
   SUPPORTED_SOLANA_CLUSTERS,
 } from "@agent-wallet/core";
-import type { UserSessionManager } from "./session-manager.js";
 import { logger } from "../logger.js";
 
 // ── Hyperliquid deposit constants (Arbitrum) ──────────────────────────
@@ -80,130 +77,6 @@ function bigIntReplacer(_key: string, value: unknown): unknown {
   return value;
 }
 
-export interface ApprovalDeps {
-  telegramUserId: number;
-  sendMessage: (text: string, keyboard?: InlineKeyboard) => Promise<void>;
-  sessionManager: UserSessionManager;
-}
-
-function formatTransactionDetails(toolName: string, input: any): string {
-  const lines: string[] = [
-    "═══════════════════════════════",
-    "  TRANSACTION APPROVAL REQUIRED",
-    "═══════════════════════════════",
-  ];
-
-  if (toolName === "wallet_send_native") {
-    const chainKey = input.chain?.toLowerCase() || "unknown";
-    const chainConfig =
-      EVM_CHAINS[chainKey] || SOLANA_CLUSTERS[chainKey] || null;
-    lines.push(
-      `Chain:  ${chainConfig?.name || input.chain}`,
-      `To:     ${input.to}`,
-      `Amount: ${input.amount} ${chainConfig?.nativeSymbol || ""}`,
-      ""
-    );
-  } else if (toolName === "wallet_execute_calldata") {
-    let chainName = `chainId ${input.chainId}`;
-    try {
-      const config = getEVMChainConfigByChainId(input.chainId);
-      chainName = config.name;
-    } catch {}
-
-    lines.push(`Chain: ${chainName} (chainId: ${input.chainId})`, "");
-
-    if (Array.isArray(input.transactions)) {
-      for (let i = 0; i < input.transactions.length; i++) {
-        const tx = input.transactions[i];
-        lines.push(
-          `Step ${i + 1}${tx.description ? `: ${tx.description}` : ""}`,
-          `  To:    ${tx.to}`,
-          `  Value: ${tx.value && tx.value !== "0" ? formatEther(BigInt(tx.value)) + " ETH" : "0"}`,
-          ""
-        );
-      }
-    }
-  } else if (toolName === "wallet_transfer_token") {
-    lines.push(
-      `Chain: ${input.chain}`,
-      `Token: ${input.tokenAddress}`,
-      `To:    ${input.to}`,
-      `Amount: ${input.amount}`,
-      ""
-    );
-  } else if (toolName === "wallet_execute_solana_transaction") {
-    lines.push(
-      `Cluster: ${input.cluster || "solana-mainnet"}`,
-      `Action:  ${input.description || "Execute Solana transaction"}`,
-      ""
-    );
-  } else if (toolName === "wallet_execute_hyperliquid_action") {
-    const network = input.isTestnet ? "Testnet" : "Mainnet";
-    lines.push(
-      `Platform: Hyperliquid (${network})`,
-      `Action:   ${input.action}`,
-    );
-    if (input.summary) {
-      for (const [key, val] of Object.entries(input.summary)) {
-        if (val != null) {
-          lines.push(`  ${key}: ${val}`);
-        }
-      }
-    }
-    lines.push("");
-  }
-
-  lines.push("═══════════════════════════════");
-  return lines.join("\n");
-}
-
-async function requestApproval(
-  deps: ApprovalDeps,
-  toolName: string,
-  input: any
-): Promise<boolean> {
-  const details = formatTransactionDetails(toolName, input);
-  const toolUseId = `${deps.telegramUserId}_${Date.now()}`;
-
-  logger.info(
-    { telegramUserId: deps.telegramUserId, toolName, toolUseId },
-    "Requesting transaction approval via Telegram"
-  );
-
-  const keyboard = new InlineKeyboard()
-    .text("Approve", `approve:${toolUseId}`)
-    .text("Deny", `deny:${toolUseId}`);
-
-  await deps.sendMessage(details, keyboard);
-
-  const approved = await deps.sessionManager.requestApproval(
-    deps.telegramUserId,
-    toolUseId
-  );
-
-  logger.info(
-    { telegramUserId: deps.telegramUserId, toolUseId, approved },
-    "Transaction approval resolved"
-  );
-
-  return approved;
-}
-
-function deniedResult() {
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: JSON.stringify(
-          { success: false, reason: "Transaction rejected by user" },
-          null,
-          2
-        ),
-      },
-    ],
-  };
-}
-
 const APPROVE_SELECTOR = "0x095ea7b3";
 
 function isApproveCall(data: string): boolean {
@@ -223,8 +96,7 @@ function decodeApproveCalldata(data: string): {
 
 export function createUserToolServer(
   evmAccount: ReturnType<typeof createEVMAccount>,
-  solanaKeypair: ReturnType<typeof createSolanaKeypairFromKey>,
-  approvalDeps: ApprovalDeps
+  solanaKeypair: ReturnType<typeof createSolanaKeypairFromKey>
 ) {
   const evmAddress = evmAccount.address;
   const solanaAddress = solanaKeypair.publicKey.toBase58();
@@ -403,9 +275,6 @@ export function createUserToolServer(
         .describe("Amount in human-readable units (e.g., '0.1')"),
     },
     async ({ chain, to, amount }) => {
-      const approved = await requestApproval(approvalDeps, "wallet_send_native", { chain, to, amount });
-      if (!approved) return deniedResult();
-
       const chainLower = chain.toLowerCase();
 
       if (chainLower in SOLANA_CLUSTERS) {
@@ -538,12 +407,6 @@ export function createUserToolServer(
         filteredTransactions.push(tx);
       }
 
-      const approved = await requestApproval(approvalDeps, "wallet_execute_calldata", {
-        chainId,
-        transactions: filteredTransactions,
-      });
-      if (!approved) return deniedResult();
-
       const walletClient = createWalletClientForAccount(
         evmAccount,
         chainConfig.key
@@ -650,9 +513,6 @@ export function createUserToolServer(
         .describe("Token decimals (default 18, use 6 for USDC/USDT)"),
     },
     async ({ chain, tokenAddress, to, amount, decimals }) => {
-      const approved = await requestApproval(approvalDeps, "wallet_transfer_token", { chain, tokenAddress, to, amount });
-      if (!approved) return deniedResult();
-
       const walletClient = createWalletClientForAccount(evmAccount, chain);
       const publicClient = getPublicClient(chain);
 
@@ -713,9 +573,6 @@ export function createUserToolServer(
         .describe("Human-readable description of this transaction"),
     },
     async ({ cluster, serializedTransaction, description }) => {
-      const approved = await requestApproval(approvalDeps, "wallet_execute_solana_transaction", { cluster, description });
-      if (!approved) return deniedResult();
-
       const result = await signAndSendSerializedTransactionWith(
         solanaKeypair,
         cluster,
@@ -770,13 +627,6 @@ export function createUserToolServer(
         .describe("Human-readable summary of the action"),
     },
     async ({ action, isTestnet, params, summary }) => {
-      const approved = await requestApproval(
-        approvalDeps,
-        "wallet_execute_hyperliquid_action",
-        { action, isTestnet, params, summary }
-      );
-      if (!approved) return deniedResult();
-
       logger.info(
         { action, isTestnet, params, summary },
         "Executing Hyperliquid action"
