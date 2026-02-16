@@ -48,4 +48,4 @@ USER agent
 
 WORKDIR /app/apps/agent
 
-ENTRYPOINT ["node", "build/index.js"]
+CMD ["node", "build/index.js"]

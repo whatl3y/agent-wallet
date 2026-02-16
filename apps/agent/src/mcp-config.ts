@@ -8,6 +8,30 @@ interface McpServersFile {
 }
 
 export function loadMcpServers(): Record<string, McpServerConfig> {
+  // Prefer MCP_SERVERS_JSON env var (same format as file: { "mcpServers": { ... } })
+  const envJson = process.env.MCP_SERVERS_JSON;
+  if (envJson) {
+    try {
+      const parsed: McpServersFile = JSON.parse(envJson);
+
+      if (!parsed.mcpServers || typeof parsed.mcpServers !== "object") {
+        logger.warn(
+          "MCP_SERVERS_JSON missing 'mcpServers' key, falling back to file"
+        );
+      } else {
+        const serverCount = Object.keys(parsed.mcpServers).length;
+        logger.info(
+          { serverCount },
+          `Loaded ${serverCount} MCP server(s) from MCP_SERVERS_JSON env var`
+        );
+        return parsed.mcpServers;
+      }
+    } catch (err) {
+      logger.error({ err }, "Failed to parse MCP_SERVERS_JSON env var");
+    }
+  }
+
+  // Fall back to config file
   const configPath = config.mcpServersConfigPath;
 
   if (!existsSync(configPath)) {

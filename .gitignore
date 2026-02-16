@@ -3,5 +3,6 @@ build
 dist
 .env
 mcp-servers.json
+mcp-servers.prod.json
 .DS_Store
 *.tsbuildinfo
