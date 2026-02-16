@@ -350,8 +350,11 @@ export async function handleMessage(
                 }
                 responseText += block.text;
               }
-              // Notify the user when tool calls start so they know work is happening
+              // Notify the user when MCP tool calls start so they know work is happening.
+              // Internal agent tools (Read, Grep, Bash, Task, etc.) are skipped —
+              // the typing indicator already signals the bot is alive.
               if (block.type === "tool_use") {
+                const isMcpTool = block.name.startsWith("mcp__");
                 const toolLabel = block.name
                   .replace(/^mcp__\w+__/, "")
                   .replace(/_/g, " ");
@@ -360,10 +363,12 @@ export async function handleMessage(
                 // can tell the user which tool is currently running.
                 const active = activeQueries.get(userId);
                 if (active) active.lastToolName = toolLabel;
-                try {
-                  await ctx.reply(`Working on it — running: ${toolLabel}...`);
-                } catch {
-                  // Non-critical, ignore send failures for status messages
+                if (isMcpTool) {
+                  try {
+                    await ctx.reply(`Working on it — running: ${toolLabel}...`);
+                  } catch {
+                    // Non-critical, ignore send failures for status messages
+                  }
                 }
               }
             }
