@@ -43,7 +43,9 @@ export async function getTokens(
       `GMX tokens API error (${response.status}): ${body}`
     );
   }
-  return response.json();
+  const data = await response.json();
+  // API returns { tokens: [...] } wrapper
+  return Array.isArray(data) ? data : data.tokens;
 }
 
 // ── Caches ─────────────────────────────────────────────────────────
