@@ -1,7 +1,7 @@
 import {
   createEVMAccount,
   createSolanaKeypairFromKey,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 import {
   getUser,
   createUser,

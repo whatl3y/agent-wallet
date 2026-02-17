@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-convex/ ./apps/mcp-convex/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-convex build
+RUN pnpm --filter @web3-agent/mcp-convex build
 
 # Production stage
 FROM node:22-alpine

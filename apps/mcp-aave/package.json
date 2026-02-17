@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-aave",
+  "name": "@web3-agent/mcp-aave",
   "version": "0.1.0",
   "description": "MCP server for AAVE V3 protocol interactions — transaction builder + read layer",
   "type": "module",

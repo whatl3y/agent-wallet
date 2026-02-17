@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Agent Wallet - Heroku Container Deployment Script
+# Web3 Agent - Heroku Container Deployment Script
 #
 # This script deploys services to Heroku using Docker containers:
 #   - telegram-bot:     Telegram bot (bot dyno)    → grep3-wallet-bot
@@ -74,7 +74,7 @@ get_services() {
 }
 
 echo "========================================"
-echo "Agent Wallet"
+echo "Web3 Agent"
 echo "Heroku Container Deployment"
 echo "========================================"
 echo ""

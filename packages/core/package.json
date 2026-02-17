@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/core",
+  "name": "@web3-agent/core",
   "version": "0.1.0",
   "type": "module",
   "main": "build/index.js",

@@ -1,6 +1,6 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-import { signAndSendSerializedTransaction } from "@agent-wallet/core";
+import { signAndSendSerializedTransaction } from "@web3-agent/core";
 
 export const walletExecuteSolanaTransaction = tool(
   "wallet_execute_solana_transaction",

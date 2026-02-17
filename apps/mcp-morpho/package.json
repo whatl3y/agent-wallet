@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-morpho",
+  "name": "@web3-agent/mcp-morpho",
   "version": "0.1.0",
   "description": "MCP server for Morpho protocol interactions — market queries via GraphQL + transaction builder for supply/borrow",
   "type": "module",

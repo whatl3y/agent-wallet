@@ -2,7 +2,7 @@ import * as readline from "node:readline";
 import { config } from "./config.js";
 import { logger } from "./logger.js";
 import { runAgent, processMessage } from "./agent.js";
-import { getEVMAccount, getSolanaKeypair } from "@agent-wallet/core";
+import { getEVMAccount, getSolanaKeypair } from "@web3-agent/core";
 
 async function main() {
   // Validate required config
@@ -12,7 +12,7 @@ async function main() {
   }
 
   // Print wallet info
-  process.stderr.write("\n  Agent Wallet\n");
+  process.stderr.write("\n  Web3 Agent\n");
   process.stderr.write("  ────────────────────────────────────\n");
 
   try {

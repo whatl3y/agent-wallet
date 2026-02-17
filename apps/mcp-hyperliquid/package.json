@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-hyperliquid",
+  "name": "@web3-agent/mcp-hyperliquid",
   "version": "0.1.0",
   "description": "MCP server for Hyperliquid perpetual trading — positions, orders, leverage, TP/SL",
   "type": "module",

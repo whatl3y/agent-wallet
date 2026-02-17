@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-balancer",
+  "name": "@web3-agent/mcp-balancer",
   "version": "0.1.0",
   "description": "MCP server for Balancer V3 — pool discovery, swaps, and liquidity operations",
   "type": "module",

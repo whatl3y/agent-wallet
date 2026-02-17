@@ -1,12 +1,12 @@
 {
-  "name": "agent-wallet",
+  "name": "web3-agent",
   "private": true,
   "packageManager": "pnpm@10.4.0",
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
-    "start": "pnpm --filter @agent-wallet/agent start",
-    "migrate": "pnpm --filter @agent-wallet/agent migrate",
+    "start": "pnpm --filter @web3-agent/agent start",
+    "migrate": "pnpm --filter @web3-agent/agent migrate",
     "typecheck": "pnpm -r typecheck",
     "clean": "pnpm -r clean"
   }

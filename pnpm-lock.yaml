@@ -10,9 +10,6 @@ importers:
 
   apps/agent:
     dependencies:
-      '@agent-wallet/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@anthropic-ai/claude-agent-sdk':
         specifier: ^0.2.41
         version: 0.2.41(zod@4.3.6)
@@ -22,6 +19,9 @@ importers:
       '@nktkas/hyperliquid':
         specifier: npm:@deeeed/hyperliquid-node20@0.23.1-node20.1
         version: '@deeeed/hyperliquid-node20@0.23.1-node20.1'
+      '@web3-agent/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       bunyan:
         specifier: ^1.8.15
         version: 1.8.15

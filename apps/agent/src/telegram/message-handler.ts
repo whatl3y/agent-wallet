@@ -150,7 +150,7 @@ export async function handleMessage(
   // Handle /start command
   if (text === "/start") {
     const welcomeHtml =
-      `<b>Welcome to Agent Wallet!</b>\n\n` +
+      `<b>Welcome to Web3 Agent!</b>\n\n` +
       `Your AI-powered crypto wallet assistant. Just chat naturally to manage your crypto across multiple chains.\n\n` +
       `<b>Your Wallet Addresses:</b>\n` +
       `<b>EVM:</b> <code>${session.evmAddress}</code>\n` +
@@ -160,7 +160,7 @@ export async function handleMessage(
       await ctx.reply(welcomeHtml, { parse_mode: "HTML" });
     } catch {
       await ctx.reply(
-        `Welcome to Agent Wallet!\n\nYour Wallet Addresses:\nEVM: ${session.evmAddress}\nSolana: ${session.solanaAddress}\n\nSend /help to see everything I can do, or just ask me anything!`
+        `Welcome to Web3 Agent!\n\nYour Wallet Addresses:\nEVM: ${session.evmAddress}\nSolana: ${session.solanaAddress}\n\nSend /help to see everything I can do, or just ask me anything!`
       );
     }
     return;
@@ -169,7 +169,7 @@ export async function handleMessage(
   // Handle /help command
   if (text === "/help") {
     const helpHtml =
-      `<b>Agent Wallet — Help</b>\n\n` +
+      `<b>Web3 Agent — Help</b>\n\n` +
       `I'm an AI assistant that manages a multi-chain crypto wallet for you. ` +
       `Just describe what you want to do in plain language and I'll handle the rest.\n\n` +
       `<b>Wallet Basics</b>\n` +
@@ -179,12 +179,12 @@ export async function handleMessage(
       `• View NFT holdings\n\n` +
       `<b>DeFi Protocols</b>\n` +
       `• <b>Aave</b> — Lend, borrow, repay, manage collateral, GHO stablecoin, staking, and governance\n` +
-      `• <b>GMX</b> — Perpetual trading, leverage positions, and liquidity\n` +
-      `• <b>Hyperliquid</b> — Perpetual trading and liquidity\n` +
+      `• <b>Balancer</b> — Pool discovery, token swaps, and liquidity provision (V3)\n` +
       `• <b>Convex</b> — Stake CRV/CVX, manage vlCVX locks, claim rewards\n` +
       `• <b>Curve</b> — Stablecoin swaps and liquidity pools\n` +
+      `• <b>GMX</b> — Perpetual trading, leverage positions, and liquidity\n` +
+      `• <b>Hyperliquid</b> — Perpetual trading and liquidity\n` +
       `• <b>Morpho</b> — Lending, borrowing, collateral management, and vault deposits\n` +
-      `• <b>Balancer</b> — Pool discovery, token swaps, and liquidity provision (V3)\n` +
       `• <b>Token Swaps</b> — Swap tokens across supported DEXs\n\n` +
       `<b>Supported Chains</b>\n` +
       `Ethereum, Polygon, Arbitrum, Optimism, Base, Avalanche, Solana\n\n` +

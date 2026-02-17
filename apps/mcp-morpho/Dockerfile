@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-morpho/ ./apps/mcp-morpho/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-morpho build
+RUN pnpm --filter @web3-agent/mcp-morpho build
 
 # Production stage
 FROM node:22-alpine

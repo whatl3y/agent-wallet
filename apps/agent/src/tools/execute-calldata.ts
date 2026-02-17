@@ -1,6 +1,6 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-import { sendEVMTransactions } from "@agent-wallet/core";
+import { sendEVMTransactions } from "@web3-agent/core";
 
 export const walletExecuteCalldata = tool(
   "wallet_execute_calldata",

@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-swap",
+  "name": "@web3-agent/mcp-swap",
   "version": "0.1.0",
   "description": "MCP server for token swaps — 0x (EVM) and Jupiter (Solana)",
   "type": "module",

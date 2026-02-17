@@ -1,4 +1,4 @@
-# @agent-wallet/agent
+# @web3-agent/agent
 
 The main AI agent application. Uses the [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-typescript) to create an interactive CLI wallet agent that can manage crypto assets across EVM and Solana chains.
 
@@ -93,7 +93,7 @@ The agent passes these payloads to `wallet_execute_calldata`, which signs and se
 
 ```bash
 # From monorepo root
-pnpm --filter @agent-wallet/agent build
+pnpm --filter @web3-agent/agent build
 pnpm start
 
 # Or directly

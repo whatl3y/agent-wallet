@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-aave/ ./apps/mcp-aave/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-aave build
+RUN pnpm --filter @web3-agent/mcp-aave build
 
 # Production stage
 FROM node:22-alpine

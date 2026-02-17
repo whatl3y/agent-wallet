@@ -6,7 +6,7 @@ import {
   getWalletClient,
   getEVMAccount,
   SUPPORTED_EVM_CHAINS,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 
 export const walletTransferToken = tool(
   "wallet_transfer_token",

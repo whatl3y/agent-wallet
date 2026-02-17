@@ -22,8 +22,8 @@ COPY packages/core/ ./packages/core/
 COPY apps/agent/ ./apps/agent/
 
 # Build core then agent
-RUN pnpm --filter @agent-wallet/core build
-RUN pnpm --filter @agent-wallet/agent build
+RUN pnpm --filter @web3-agent/core build
+RUN pnpm --filter @web3-agent/agent build
 
 # Production stage
 FROM node:22-slim

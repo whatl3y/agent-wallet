@@ -4,7 +4,7 @@ import {
   getEVMChainConfigByChainId,
   EVM_CHAINS,
   SOLANA_CLUSTERS,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 import { formatEther } from "viem";
 
 const READ_ONLY_TOOLS = new Set([

@@ -23,7 +23,7 @@ import {
   SOLANA_CLUSTERS,
   SUPPORTED_EVM_CHAINS,
   SUPPORTED_SOLANA_CLUSTERS,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 import { logger } from "../logger.js";
 
 // ── Hyperliquid deposit constants (Arbitrum) ──────────────────────────

@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-swap/ ./apps/mcp-swap/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-swap build
+RUN pnpm --filter @web3-agent/mcp-swap build
 
 # Production stage
 FROM node:22-alpine

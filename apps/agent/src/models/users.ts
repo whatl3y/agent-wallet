@@ -5,7 +5,7 @@ import {
   scryptSync,
 } from "node:crypto";
 import { db } from "../database/database.js";
-import { generateEVMKeys, generateSolanaKeys } from "@agent-wallet/core";
+import { generateEVMKeys, generateSolanaKeys } from "@web3-agent/core";
 
 export interface UserRecord {
   telegramUserId: number;

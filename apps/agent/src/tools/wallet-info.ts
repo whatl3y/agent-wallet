@@ -10,7 +10,7 @@ import {
   SUPPORTED_SOLANA_CLUSTERS,
   EVM_CHAINS,
   SOLANA_CLUSTERS,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 
 export const walletGetAddresses = tool(
   "wallet_get_addresses",

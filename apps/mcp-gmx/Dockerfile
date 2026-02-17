@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-gmx/ ./apps/mcp-gmx/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-gmx build
+RUN pnpm --filter @web3-agent/mcp-gmx build
 
 # Production stage
 FROM node:22-alpine

@@ -1,5 +1,5 @@
 import { query, type SDKMessage } from "@anthropic-ai/claude-agent-sdk";
-import { getEVMAccount, getSolanaKeypair } from "@agent-wallet/core";
+import { getEVMAccount, getSolanaKeypair } from "@web3-agent/core";
 import { config } from "./config.js";
 import { logger } from "./logger.js";
 import { loadMcpServers } from "./mcp-config.js";

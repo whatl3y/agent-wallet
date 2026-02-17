@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/mcp-balancer/ ./apps/mcp-balancer/
 
 # Build
-RUN pnpm --filter @agent-wallet/mcp-balancer build
+RUN pnpm --filter @web3-agent/mcp-balancer build
 
 # Production stage
 FROM node:22-alpine

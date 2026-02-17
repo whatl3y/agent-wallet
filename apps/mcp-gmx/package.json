@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-gmx",
+  "name": "@web3-agent/mcp-gmx",
   "version": "0.1.0",
   "description": "MCP server for GMX V2 perpetual trading — positions, orders, and market data",
   "type": "module",

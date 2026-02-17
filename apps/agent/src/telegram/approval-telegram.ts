@@ -4,7 +4,7 @@ import {
   getEVMChainConfigByChainId,
   EVM_CHAINS,
   SOLANA_CLUSTERS,
-} from "@agent-wallet/core";
+} from "@web3-agent/core";
 import { formatEther } from "viem";
 import type { UserSessionManager } from "./session-manager.js";
 import { logger } from "../logger.js";

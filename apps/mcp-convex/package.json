@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-convex",
+  "name": "@web3-agent/mcp-convex",
   "version": "0.1.0",
   "description": "MCP server for Convex Finance — deposit Curve LP tokens, stake CVX/cvxCRV, lock vlCVX, and claim boosted rewards",
   "type": "module",

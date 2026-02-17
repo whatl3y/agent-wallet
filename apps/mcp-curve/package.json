@@ -1,5 +1,5 @@
 {
-  "name": "@agent-wallet/mcp-curve",
+  "name": "@web3-agent/mcp-curve",
   "version": "0.1.0",
   "description": "MCP server for Curve Finance — liquidity pools, LP staking, gauge rewards, and swaps",
   "type": "module",
