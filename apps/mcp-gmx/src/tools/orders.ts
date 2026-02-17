@@ -5,6 +5,7 @@ import { getChainConfig, SUPPORTED_CHAINS } from "../config/chains.js";
 import { getPublicClient } from "../clients.js";
 import { exchangeRouterAbi } from "../abis/exchange-router.js";
 import { syntheticsReaderAbi } from "../abis/synthetics-reader.js";
+import { dataStoreAbi } from "../abis/data-store.js";
 import {
   getCachedTickerPrices,
   buildPriceMap,
@@ -20,12 +21,14 @@ import {
   applySlippage,
   parseAmount,
   parseUsdPrice,
+  parseOraclePrice,
   formatUsd,
   formatUsdPrice,
   computePositionKey,
   buildMarketPrices,
   getTokenDecimals,
   getTokenSymbol,
+  accountOrderListKey,
   ZERO_ADDRESS,
   jsonResult,
   errorResult,
@@ -222,10 +225,16 @@ export function registerOrderTools(server: McpServer) {
           value: multicall.value.toString(),
         });
 
+        // Get index token decimals for oracle-format price conversion (TP/SL)
+        const indexTokenDecimals =
+          takeProfitPrice || stopLossPrice
+            ? await getTokenDecimals(chain, marketData.indexToken as `0x${string}`)
+            : 18;
+
         // Build TP order if specified
         if (takeProfitPrice) {
           const tpExecutionFee = await estimateExecutionFee(chain, "decrease");
-          const tpTriggerPrice = parseUsdPrice(takeProfitPrice);
+          const tpTriggerPrice = parseOraclePrice(takeProfitPrice, indexTokenDecimals);
           const tpAcceptablePrice = applySlippage(
             tpTriggerPrice,
             slippageBps,
@@ -266,7 +275,7 @@ export function registerOrderTools(server: McpServer) {
         // Build SL order if specified
         if (stopLossPrice) {
           const slExecutionFee = await estimateExecutionFee(chain, "decrease");
-          const slTriggerPrice = parseUsdPrice(stopLossPrice);
+          const slTriggerPrice = parseOraclePrice(stopLossPrice, indexTokenDecimals);
           const slAcceptablePrice = applySlippage(
             slTriggerPrice,
             slippageBps,
@@ -491,8 +500,6 @@ export function registerOrderTools(server: McpServer) {
           sizeDeltaUsd = parseUsdPrice(closeSizeUsd);
         }
 
-        const tpTriggerPrice = parseUsdPrice(triggerPrice);
-        const acceptablePrice = applySlippage(tpTriggerPrice, slippageBps, !isLong);
         const executionFee = await estimateExecutionFee(chain, "decrease");
 
         const tickers = await getCachedTickerPrices(config.gmx.apiBaseUrl);
@@ -504,6 +511,10 @@ export function registerOrderTools(server: McpServer) {
           args: [config.gmx.dataStore, market as `0x${string}`],
         });
         const indexSymbol = symbolMap.get(marketData.indexToken.toLowerCase()) || "?";
+        const indexTokenDecimals = await getTokenDecimals(chain, marketData.indexToken as `0x${string}`);
+
+        const tpTriggerPrice = parseOraclePrice(triggerPrice, indexTokenDecimals);
+        const acceptablePrice = applySlippage(tpTriggerPrice, slippageBps, !isLong);
 
         const orderParams = buildCreateOrderParams({
           receiver: sender as `0x${string}`,
@@ -594,8 +605,6 @@ export function registerOrderTools(server: McpServer) {
           sizeDeltaUsd = parseUsdPrice(closeSizeUsd);
         }
 
-        const slTriggerPrice = parseUsdPrice(triggerPrice);
-        const acceptablePrice = applySlippage(slTriggerPrice, slippageBps, !isLong);
         const executionFee = await estimateExecutionFee(chain, "decrease");
 
         const tickers = await getCachedTickerPrices(config.gmx.apiBaseUrl);
@@ -607,6 +616,10 @@ export function registerOrderTools(server: McpServer) {
           args: [config.gmx.dataStore, market as `0x${string}`],
         });
         const indexSymbol = symbolMap.get(marketData.indexToken.toLowerCase()) || "?";
+        const indexTokenDecimals = await getTokenDecimals(chain, marketData.indexToken as `0x${string}`);
+
+        const slTriggerPrice = parseOraclePrice(triggerPrice, indexTokenDecimals);
+        const acceptablePrice = applySlippage(slTriggerPrice, slippageBps, !isLong);
 
         const orderParams = buildCreateOrderParams({
           receiver: sender as `0x${string}`,
@@ -655,7 +668,7 @@ export function registerOrderTools(server: McpServer) {
   // ── Update Order ───────────────────────────────────────────────────
   server.tool(
     "gmx_update_order",
-    "Build transaction to update an existing pending GMX V2 order's trigger price, size, or acceptable price.",
+    "Build transaction to update an existing pending GMX V2 order's trigger price, size, or acceptable price. Fetches the current order on-chain so unspecified fields keep their current values.",
     {
       chain: chainParam,
       orderKey: z
@@ -663,25 +676,52 @@ export function registerOrderTools(server: McpServer) {
         .regex(/^0x[a-fA-F0-9]{64}$/)
         .describe("Order key (bytes32 hex)"),
       sizeDeltaUsd: z.string().optional().describe("New size delta in USD"),
-      triggerPrice: z.string().optional().describe("New trigger price in USD"),
-      acceptablePrice: z.string().optional().describe("New acceptable price in USD"),
+      triggerPrice: z.string().optional().describe("New trigger price in USD (human-readable, e.g. '3500')"),
+      acceptablePrice: z.string().optional().describe("New acceptable price in USD (human-readable)"),
       autoCancel: z.boolean().optional().describe("Auto-cancel when position is closed"),
     },
     async ({ chain, orderKey, sizeDeltaUsd, triggerPrice, acceptablePrice, autoCancel }) => {
       try {
         const config = getChainConfig(chain);
+        const client = getPublicClient(chain);
+
+        // Fetch current order to use as defaults for unspecified fields
+        const currentOrder = await client.readContract({
+          address: config.gmx.syntheticsReader,
+          abi: syntheticsReaderAbi,
+          functionName: "getOrder",
+          args: [config.gmx.dataStore, orderKey as `0x${string}`],
+        });
+
+        // Get index token decimals for price conversion
+        const marketData = await client.readContract({
+          address: config.gmx.syntheticsReader,
+          abi: syntheticsReaderAbi,
+          functionName: "getMarket",
+          args: [config.gmx.dataStore, currentOrder.addresses.market],
+        });
+        const indexTokenDecimals = await getTokenDecimals(
+          chain,
+          marketData.indexToken as `0x${string}`
+        );
 
         const data = encodeFunctionData({
           abi: exchangeRouterAbi,
           functionName: "updateOrder",
           args: [
             orderKey as `0x${string}`,
-            sizeDeltaUsd ? parseUsdPrice(sizeDeltaUsd) : 0n,
-            acceptablePrice ? parseUsdPrice(acceptablePrice) : 0n,
-            triggerPrice ? parseUsdPrice(triggerPrice) : 0n,
-            0n, // minOutputAmount
-            0n, // validFromTime
-            autoCancel ?? true,
+            sizeDeltaUsd
+              ? parseUsdPrice(sizeDeltaUsd)
+              : currentOrder.numbers.sizeDeltaUsd,
+            acceptablePrice
+              ? parseOraclePrice(acceptablePrice, indexTokenDecimals)
+              : currentOrder.numbers.acceptablePrice,
+            triggerPrice
+              ? parseOraclePrice(triggerPrice, indexTokenDecimals)
+              : currentOrder.numbers.triggerPrice,
+            currentOrder.numbers.minOutputAmount,
+            currentOrder.numbers.validFromTime,
+            autoCancel ?? currentOrder.flags.autoCancel,
           ],
         });
 
@@ -747,6 +787,72 @@ export function registerOrderTools(server: McpServer) {
       } catch (error) {
         return errorResult(
           `Failed to cancel order: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
+  );
+
+  // ── Cancel All Orders ────────────────────────────────────────────────
+  server.tool(
+    "gmx_cancel_all_orders",
+    "Build transaction to cancel ALL pending GMX V2 orders (TP/SL, limit orders) for a wallet. Uses multicall to batch all cancellations into a single transaction. Execution fees are refunded.",
+    {
+      chain: chainParam,
+      account: addressParam.describe("Wallet address"),
+    },
+    async ({ chain, account }) => {
+      try {
+        const config = getChainConfig(chain);
+        const client = getPublicClient(chain);
+
+        const orderKeys = await client.readContract({
+          address: config.gmx.dataStore,
+          abi: dataStoreAbi,
+          functionName: "getBytes32ValuesAt",
+          args: [accountOrderListKey(account as `0x${string}`), 0n, 1000n],
+        });
+
+        if (orderKeys.length === 0) {
+          return jsonResult({
+            chain,
+            account,
+            message: "No pending orders to cancel",
+            cancelledCount: 0,
+          });
+        }
+
+        const cancelCalls: `0x${string}`[] = orderKeys.map((key) =>
+          encodeFunctionData({
+            abi: exchangeRouterAbi,
+            functionName: "cancelOrder",
+            args: [key],
+          })
+        );
+
+        const data = encodeFunctionData({
+          abi: exchangeRouterAbi,
+          functionName: "multicall",
+          args: [cancelCalls],
+        });
+
+        const payload: TransactionPayload = {
+          chainId: config.chain.id,
+          transactions: [
+            {
+              step: 1,
+              type: "action",
+              description: `Cancel all ${orderKeys.length} pending order(s) (execution fees refunded)`,
+              to: config.gmx.exchangeRouter,
+              data,
+              value: "0",
+            },
+          ],
+        };
+
+        return jsonResult(payload);
+      } catch (error) {
+        return errorResult(
+          `Failed to cancel all orders: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }

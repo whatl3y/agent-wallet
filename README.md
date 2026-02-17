@@ -42,10 +42,31 @@ agent-wallet/
     │   ├── clients.ts    # Hyperliquid SDK client initialization
     │   └── http.ts       # HTTP transport for remote deployments
     │
-    └── mcp-gmx/          # @agent-wallet/mcp-gmx — GMX V2 perps MCP server
-        ├── tools/        # 15 tools: markets, positions, orders, collateral, TP/SL, PNL
-        ├── config/       # Chain configs and GMX deployment addresses (Arbitrum, Avalanche)
-        ├── api/          # GMX REST API client (prices, tokens)
+    ├── mcp-gmx/          # @agent-wallet/mcp-gmx — GMX V2 perps MCP server
+    │   ├── tools/        # 15 tools: markets, positions, orders, collateral, TP/SL, PNL
+    │   ├── config/       # Chain configs and GMX deployment addresses (Arbitrum, Avalanche)
+    │   ├── api/          # GMX REST API client (prices, tokens)
+    │   └── http.ts       # HTTP transport for remote deployments
+    │
+    ├── mcp-curve/        # @agent-wallet/mcp-curve — Curve Finance MCP server
+    │   ├── tools/        # 14 tools: pools, liquidity, gauges/rewards, swaps
+    │   ├── config/       # Chain configs (Ethereum, Polygon, Arbitrum, Optimism, Base, Avalanche)
+    │   └── http.ts       # HTTP transport for remote deployments
+    │
+    ├── mcp-convex/       # @agent-wallet/mcp-convex — Convex Finance MCP server
+    │   ├── tools/        # 21 tools: pools, deposits, rewards, CVX staking, cvxCRV, vlCVX locking
+    │   ├── config/       # Contract addresses (Ethereum mainnet)
+    │   └── http.ts       # HTTP transport for remote deployments
+    │
+    ├── mcp-morpho/       # @agent-wallet/mcp-morpho — Morpho lending MCP server
+    │   ├── tools/        # 13 tools: markets, vaults, supply, borrow, collateral, vault deposits
+    │   ├── api/          # Morpho GraphQL API client
+    │   └── http.ts       # HTTP transport for remote deployments
+    │
+    └── mcp-balancer/     # @agent-wallet/mcp-balancer — Balancer V3 MCP server
+        ├── tools/        # 11 tools: pools, swaps, add/remove liquidity
+        ├── api/          # Balancer GraphQL API client (api-v3.balancer.fi)
+        ├── config/       # Chain configs (Ethereum, Arbitrum, Base, Optimism, Avalanche)
         └── http.ts       # HTTP transport for remote deployments
 ```
 
@@ -88,6 +109,10 @@ pnpm --filter @agent-wallet/mcp-aave build
 pnpm --filter @agent-wallet/mcp-swap build
 pnpm --filter @agent-wallet/mcp-hyperliquid build
 pnpm --filter @agent-wallet/mcp-gmx build
+pnpm --filter @agent-wallet/mcp-curve build
+pnpm --filter @agent-wallet/mcp-convex build
+pnpm --filter @agent-wallet/mcp-morpho build
+pnpm --filter @agent-wallet/mcp-balancer build
 ```
 
 ## Run & Usage
@@ -96,7 +121,7 @@ The agent is an **interactive CLI chat** that runs via Docker Compose. You type 
 
 ### 1. Configure MCP servers
 
-The agent connects to MCP servers for DeFi protocol interactions. Bundled servers include `mcp-aave` (lending/borrowing), `mcp-swap` (token swaps), `mcp-hyperliquid` (perpetual trading), and `mcp-gmx` (GMX V2 perpetuals). Create your config:
+The agent connects to MCP servers for DeFi protocol interactions. Bundled servers include `mcp-aave` (lending/borrowing), `mcp-swap` (token swaps), `mcp-hyperliquid` (perpetual trading), `mcp-gmx` (GMX V2 perpetuals), `mcp-curve` (Curve pools/swaps), `mcp-convex` (Convex yield boosting), `mcp-morpho` (Morpho lending), and `mcp-balancer` (Balancer V3 pools/swaps/liquidity). Create your config:
 
 ```bash
 cp mcp-servers.example.json mcp-servers.json
@@ -122,6 +147,22 @@ When running with Docker Compose, use **HTTP transport** to connect to sibling c
     "gmx": {
       "type": "http",
       "url": "http://mcp-gmx:3003/mcp"
+    },
+    "curve": {
+      "type": "http",
+      "url": "http://mcp-curve:3004/mcp"
+    },
+    "convex": {
+      "type": "http",
+      "url": "http://mcp-convex:3005/mcp"
+    },
+    "morpho": {
+      "type": "http",
+      "url": "http://mcp-morpho:3006/mcp"
+    },
+    "balancer": {
+      "type": "http",
+      "url": "http://mcp-balancer:3007/mcp"
     }
   }
 }
@@ -161,6 +202,45 @@ For local development without Docker, use **stdio transport** instead:
         "ARBITRUM_RPC_URL": "https://arb1.arbitrum.io/rpc",
         "AVALANCHE_RPC_URL": "https://api.avax.network/ext/bc/C/rpc"
       }
+    },
+    "curve": {
+      "command": "node",
+      "args": ["apps/mcp-curve/build/index.js"],
+      "env": {
+        "ETHEREUM_RPC_URL": "https://eth.llamarpc.com",
+        "POLYGON_RPC_URL": "https://polygon.llamarpc.com",
+        "ARBITRUM_RPC_URL": "https://arb1.arbitrum.io/rpc",
+        "OPTIMISM_RPC_URL": "https://mainnet.optimism.io",
+        "BASE_RPC_URL": "https://mainnet.base.org",
+        "AVALANCHE_RPC_URL": "https://api.avax.network/ext/bc/C/rpc"
+      }
+    },
+    "convex": {
+      "command": "node",
+      "args": ["apps/mcp-convex/build/index.js"],
+      "env": {
+        "ETHEREUM_RPC_URL": "https://eth.llamarpc.com"
+      }
+    },
+    "morpho": {
+      "command": "node",
+      "args": ["apps/mcp-morpho/build/index.js"],
+      "env": {
+        "ETHEREUM_RPC_URL": "https://eth.llamarpc.com",
+        "BASE_RPC_URL": "https://mainnet.base.org",
+        "ARBITRUM_RPC_URL": "https://arb1.arbitrum.io/rpc"
+      }
+    },
+    "balancer": {
+      "command": "node",
+      "args": ["apps/mcp-balancer/build/index.js"],
+      "env": {
+        "ETHEREUM_RPC_URL": "https://eth.llamarpc.com",
+        "ARBITRUM_RPC_URL": "https://arb1.arbitrum.io/rpc",
+        "BASE_RPC_URL": "https://mainnet.base.org",
+        "OPTIMISM_RPC_URL": "https://mainnet.optimism.io",
+        "AVALANCHE_RPC_URL": "https://api.avax.network/ext/bc/C/rpc"
+      }
     }
   }
 }
@@ -178,13 +258,17 @@ docker compose build mcp-aave
 docker compose build mcp-swap
 docker compose build mcp-hyperliquid
 docker compose build mcp-gmx
+docker compose build mcp-curve
+docker compose build mcp-convex
+docker compose build mcp-morpho
+docker compose build mcp-balancer
 ```
 
 ### 3. Start the services
 
 ```bash
 # Start MCP servers in the background
-docker compose up -d mcp-aave mcp-swap mcp-hyperliquid mcp-gmx
+docker compose up -d mcp-aave mcp-swap mcp-hyperliquid mcp-gmx mcp-curve mcp-convex mcp-morpho mcp-balancer
 
 # Option A: Run the Telegram bot (recommended — no interactive terminal needed)
 docker compose up telegram-bot
@@ -211,6 +295,10 @@ On startup the agent prints your wallet addresses, then enters a chat loop:
   MCP: swap [connected]
   MCP: hyperliquid [connected]
   MCP: gmx [connected]
+  MCP: curve [connected]
+  MCP: convex [connected]
+  MCP: morpho [connected]
+  MCP: balancer [connected]
 
   Type your message (or 'exit' to quit):
 
@@ -260,7 +348,7 @@ DATABASE_URL=postgres://agentwallet:agentwallet@localhost:5432/agentwallet
 pnpm --filter @agent-wallet/agent start:telegram
 
 # Docker Compose (starts MCP servers too)
-docker compose up -d mcp-aave mcp-swap mcp-hyperliquid mcp-gmx
+docker compose up -d mcp-aave mcp-swap mcp-hyperliquid mcp-gmx mcp-curve mcp-convex mcp-morpho mcp-balancer
 docker compose up telegram-bot
 ```
 
@@ -294,6 +382,23 @@ The bot ignores all messages in groups, supergroups, and channels — it only re
 - "Close my ETH long position on GMX" (requires mcp-gmx configured)
 - "Set a take-profit at $4,000 on my GMX ETH long" (requires mcp-gmx configured)
 - "Deposit 50 more USDC collateral to my GMX ETH position" (requires mcp-gmx configured)
+- "Show all Curve pools on Ethereum" (requires mcp-curve configured)
+- "Add liquidity to the Curve 3pool with 1000 USDC" (requires mcp-curve configured)
+- "What are my Curve LP positions and claimable rewards?" (requires mcp-curve configured)
+- "Stake my Curve LP tokens in the gauge to earn CRV" (requires mcp-curve configured)
+- "Show all Convex pools and their APYs" (requires mcp-convex configured)
+- "Deposit my Curve LP tokens into Convex for boosted rewards" (requires mcp-convex configured)
+- "Claim my CRV and CVX rewards from Convex" (requires mcp-convex configured)
+- "Stake my CVX tokens" (requires mcp-convex configured)
+- "Lock CVX as vlCVX for governance voting" (requires mcp-convex configured)
+- "Show Morpho markets for USDC" (requires mcp-morpho configured)
+- "What are the best Morpho vault yields?" (requires mcp-morpho configured)
+- "Supply 1000 USDC to the best Morpho market on Ethereum" (requires mcp-morpho configured)
+- "Deposit 500 USDC into a Morpho vault on Base" (requires mcp-morpho configured)
+- "Show all Balancer V3 pools on Ethereum" (requires mcp-balancer configured)
+- "Get a swap quote for 1000 USDC to WETH on Balancer" (requires mcp-balancer configured)
+- "Add liquidity to a Balancer weighted pool on Arbitrum" (requires mcp-balancer configured)
+- "What are my Balancer LP positions on Base?" (requires mcp-balancer configured)
 - "Send 0.01 ETH to 0x..."
 
 ### Building images directly
@@ -304,6 +409,10 @@ docker build -f apps/mcp-aave/Dockerfile -t mcp-aave .
 docker build -f apps/mcp-swap/Dockerfile -t mcp-swap .
 docker build -f apps/mcp-hyperliquid/Dockerfile -t mcp-hyperliquid .
 docker build -f apps/mcp-gmx/Dockerfile -t mcp-gmx .
+docker build -f apps/mcp-curve/Dockerfile -t mcp-curve .
+docker build -f apps/mcp-convex/Dockerfile -t mcp-convex .
+docker build -f apps/mcp-morpho/Dockerfile -t mcp-morpho .
+docker build -f apps/mcp-balancer/Dockerfile -t mcp-balancer .
 ```
 
 ## MCP Server: Hyperliquid (`mcp-hyperliquid`)
@@ -365,6 +474,145 @@ The `mcp-gmx` server builds transaction calldata (never holds keys). It returns 
 | `gmx_deposit_collateral` | Add collateral to a position without changing size |
 | `gmx_withdraw_collateral` | Remove collateral from a position without changing size |
 
+## MCP Server: Curve (`mcp-curve`)
+
+Provides 14 tools for interacting with [Curve Finance](https://curve.fi) — the largest stablecoin and like-asset DEX. Query pools, provide liquidity, stake in gauges for CRV rewards, and swap tokens on Ethereum, Polygon, Arbitrum, Optimism, Base, and Avalanche.
+
+The `mcp-curve` server builds transaction calldata (never holds keys).
+
+### Read-only tools
+| Tool | Description |
+|------|-------------|
+| `curve_get_pools` | All pools on a chain with TVL, tokens, CRV APY, gauge address |
+| `curve_get_pool_info` | Detailed pool info: TVL, APY, tokens with balances, virtual price, fee, amplification |
+| `curve_get_pool_apy` | APY breakdown: base (trading fees), CRV rewards (min/max boost), bonus rewards |
+| `curve_get_user_positions` | User's LP balances (wallet + staked in gauges), claimable rewards, USD values |
+
+### Liquidity tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `curve_add_liquidity` | Deposit tokens into a pool to receive LP tokens (single-sided or balanced) |
+| `curve_remove_liquidity` | Withdraw all tokens proportionally by burning LP tokens |
+| `curve_remove_liquidity_one_coin` | Withdraw a single token by burning LP tokens |
+| `curve_calc_token_amount` | Estimate LP tokens minted/burned for a deposit or withdrawal |
+
+### Gauge tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `curve_stake_lp` | Stake LP tokens in a gauge to earn CRV + bonus rewards |
+| `curve_unstake_lp` | Unstake LP tokens from a gauge |
+| `curve_claim_rewards` | Claim pending CRV and bonus reward tokens from a gauge |
+| `curve_get_claimable_rewards` | Check pending CRV and reward token amounts for a user |
+
+### Swap tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `curve_swap_quote` | Get a swap quote from a specific Curve pool |
+| `curve_swap_build` | Build a swap transaction on a specific Curve pool |
+
+## MCP Server: Convex (`mcp-convex`)
+
+Provides 21 tools for interacting with [Convex Finance](https://www.convexfinance.com) — the yield boosting layer on top of Curve. Deposit Curve LP tokens to earn boosted CRV + CVX rewards, stake CVX, convert and stake cvxCRV, and lock CVX as vlCVX for governance. Ethereum mainnet only.
+
+The `mcp-convex` server builds transaction calldata (never holds keys).
+
+### Read-only tools
+| Tool | Description |
+|------|-------------|
+| `convex_get_pools` | All Convex pools with LP token, reward contract, and status |
+| `convex_get_pool_info` | Detailed pool info: total staked, reward rate, extra reward tokens |
+| `convex_get_user_positions` | User's staked balances, pending CRV, and extra rewards across pools |
+| `convex_get_claimable_rewards` | Pending CRV and extra reward tokens for a user in a pool |
+| `convex_get_cvx_staking_info` | User's CVX staking position and pending cvxCRV rewards |
+| `convex_get_cvxcrv_staking_info` | User's cvxCRV staking position, reward weight, and balances |
+| `convex_get_vlcvx_info` | User's vlCVX position: locked balance, voting power, lock schedule, rewards |
+
+### Deposit tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `convex_deposit` | Deposit Curve LP tokens into Convex for boosted CRV + CVX rewards |
+| `convex_withdraw` | Withdraw Curve LP tokens from Convex |
+| `convex_unstake_and_withdraw` | Unstake + withdraw LP tokens in one transaction (optionally claim rewards) |
+
+### Reward tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `convex_claim_rewards` | Claim pending CRV + CVX + extra rewards from a pool |
+| `convex_earmark_rewards` | Harvest CRV from Curve gauge for a pool (anyone can call, earns incentive fee) |
+
+### CVX staking tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `convex_stake_cvx` | Stake CVX tokens to earn cvxCRV rewards (platform fees) |
+| `convex_unstake_cvx` | Unstake CVX, optionally claiming pending rewards |
+
+### cvxCRV tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `convex_convert_crv_to_cvxcrv` | Convert CRV to cvxCRV (irreversible — CRV locked as veCRV) |
+| `convex_stake_cvxcrv` | Stake cvxCRV to earn CRV, CVX, and crvUSD rewards |
+| `convex_unstake_cvxcrv` | Unstake cvxCRV from the staking wrapper |
+| `convex_claim_cvxcrv_rewards` | Claim pending CRV, CVX, and crvUSD from cvxCRV staking |
+
+### vlCVX locking tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `convex_lock_cvx` | Lock CVX as vlCVX (16+ weeks) for governance voting + platform fee rewards |
+| `convex_process_expired_locks` | Relock or withdraw expired vlCVX locks |
+| `convex_claim_vlcvx_rewards` | Claim pending platform fee rewards from vlCVX |
+
+## MCP Server: Morpho (`mcp-morpho`)
+
+Provides 13 tools for interacting with [Morpho](https://morpho.org) — the universal lending network. Queries market data via the Morpho GraphQL API and builds transaction calldata for supply, borrow, collateral, and vault operations on Ethereum, Base, and Arbitrum.
+
+The `mcp-morpho` server builds transaction calldata (never holds keys). No API key required — uses the public Morpho GraphQL API.
+
+### Read-only tools (GraphQL API)
+| Tool | Description |
+|------|-------------|
+| `morpho_get_markets` | List markets with supply/borrow APYs, TVL, utilization |
+| `morpho_get_market_details` | Detailed market info by unique key |
+| `morpho_get_vaults` | List vaults with APYs, TVL, underlying asset |
+| `morpho_get_vault_details` | Detailed vault info by address |
+| `morpho_get_user_market_position` | User position in a specific market |
+| `morpho_get_user_vault_position` | User position in a specific vault |
+| `morpho_get_user_positions` | All user positions across markets and vaults |
+
+### Transaction tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `morpho_supply` | Supply (lend) tokens to a market to earn interest |
+| `morpho_withdraw` | Withdraw supplied assets from a market |
+| `morpho_supply_collateral` | Supply collateral to a market (required before borrowing) |
+| `morpho_withdraw_collateral` | Withdraw collateral from a market |
+| `morpho_borrow` | Borrow tokens against supplied collateral |
+| `morpho_repay` | Repay borrowed tokens |
+| `morpho_vault_deposit` | Deposit into a Morpho vault (ERC4626) |
+| `morpho_vault_withdraw` | Withdraw from a Morpho vault (ERC4626) |
+
+## MCP Server: Balancer (`mcp-balancer`)
+
+Provides 11 tools for interacting with [Balancer V3](https://balancer.fi) — a leading AMM protocol supporting weighted pools, stable pools, boosted pools (ERC-4626), Gyroscope pools, and more. Queries pool data via the Balancer GraphQL API and uses the `@balancer/sdk` for swap routing and liquidity operations on Ethereum, Arbitrum, Base, Optimism, and Avalanche.
+
+The `mcp-balancer` server builds transaction calldata (never holds keys). No API key required — uses the public Balancer API.
+
+### Read-only tools (API + on-chain)
+| Tool | Description |
+|------|-------------|
+| `balancer_get_pools` | List V3 pools with TVL, volume, APR, tokens, weights, swap fee |
+| `balancer_get_pool_info` | Detailed pool info: tokens with balances/prices/weights, APR breakdown |
+| `balancer_get_user_positions` | User's BPT balances across pools with estimated USD values |
+| `balancer_swap_quote` | Get optimal swap quote via Smart Order Router (SOR) |
+| `balancer_add_liquidity_quote` | Quote for adding liquidity (unbalanced or single-token) |
+| `balancer_remove_liquidity_quote` | Quote for removing liquidity (proportional or single-token) |
+
+### Transaction tools (build calldata)
+| Tool | Description |
+|------|-------------|
+| `balancer_swap_build` | Build swap transaction with SOR routing and slippage protection |
+| `balancer_add_liquidity_build` | Build add-liquidity transaction with token approvals |
+| `balancer_remove_liquidity_build` | Build remove-liquidity transaction |
+
 ## Supported Chains
 
 ### EVM
@@ -378,6 +626,18 @@ The `mcp-gmx` server builds transaction calldata (never holds keys). It returns 
 
 ### GMX V2
 - Arbitrum, Avalanche
+
+### Curve
+- Ethereum, Polygon, Arbitrum, Optimism, Base, Avalanche
+
+### Convex
+- Ethereum
+
+### Morpho
+- Ethereum, Base, Arbitrum
+
+### Balancer V3
+- Ethereum, Arbitrum, Base, Optimism, Avalanche
 
 ## Development
 
@@ -421,7 +681,7 @@ To test the agent:
 | `ZEROX_API_KEY` | 0x API key for EVM swaps (required for mcp-swap) |
 | `JUPITER_API_KEY` | Jupiter API key for Solana swaps (optional, works without but rate-limited) |
 | `HYPERLIQUID_TESTNET` | Set to `true` to use Hyperliquid testnet (default: mainnet) |
-| `PORT` | MCP server HTTP port (default: `3000` for mcp-aave, `3001` for mcp-swap, `3002` for mcp-hyperliquid, `3003` for mcp-gmx) |
+| `PORT` | MCP server HTTP port (default: `3000` for mcp-aave, `3001` for mcp-swap, `3002` for mcp-hyperliquid, `3003` for mcp-gmx, `3004` for mcp-curve, `3005` for mcp-convex, `3006` for mcp-morpho, `3007` for mcp-balancer) |
 | `API_KEY` | MCP server Bearer token auth (optional, leave empty for open access) |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather (required for Telegram bot) |
 | `WALLET_ENCRYPTION_KEY` | Passphrase for encrypting per-user wallet keys in the database (required for Telegram bot) |

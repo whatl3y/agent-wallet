@@ -8,6 +8,7 @@ import {
   buildPriceMap,
   buildSymbolMap,
 } from "../api/gmx.js";
+import { dataStoreAbi } from "../abis/data-store.js";
 import {
   computePositionKey,
   calcEntryPrice,
@@ -17,6 +18,7 @@ import {
   formatUsdPrice,
   formatAmount,
   getTokenDecimals,
+  accountOrderListKey,
   ZERO_ADDRESS,
   ORDER_TYPE_LABELS,
   jsonResult,
@@ -324,12 +326,20 @@ export function registerPositionTools(server: McpServer) {
         const config = getChainConfig(chain);
         const client = getPublicClient(chain);
 
-        const orders = await client.readContract({
-          address: config.gmx.syntheticsReader,
-          abi: syntheticsReaderAbi,
-          functionName: "getAccountOrders",
-          args: [config.gmx.dataStore, account as `0x${string}`, 0n, 1000n],
-        });
+        const [orders, orderKeys] = await Promise.all([
+          client.readContract({
+            address: config.gmx.syntheticsReader,
+            abi: syntheticsReaderAbi,
+            functionName: "getAccountOrders",
+            args: [config.gmx.dataStore, account as `0x${string}`, 0n, 1000n],
+          }),
+          client.readContract({
+            address: config.gmx.dataStore,
+            abi: dataStoreAbi,
+            functionName: "getBytes32ValuesAt",
+            args: [accountOrderListKey(account as `0x${string}`), 0n, 1000n],
+          }),
+        ]);
 
         if (orders.length === 0) {
           return jsonResult({ chain, account, orders: [], count: 0 });
@@ -364,7 +374,7 @@ export function registerPositionTools(server: McpServer) {
           })
         );
 
-        const formatted = orders.map((order) => {
+        const formatted = orders.map((order, index) => {
           const marketSymbol =
             symbolMap.get(order.addresses.market.toLowerCase()) || "?";
           const collateralSymbol =
@@ -382,6 +392,7 @@ export function registerPositionTools(server: McpServer) {
             order.numbers.acceptablePrice * 10n ** dec;
 
           return {
+            orderKey: orderKeys[index] ?? null,
             market: order.addresses.market,
             marketSymbol,
             collateralToken: order.addresses.initialCollateralToken,

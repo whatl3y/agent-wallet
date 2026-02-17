@@ -95,6 +95,28 @@ services:
     environment:
       - PORT=3005
 
+  mcp-morpho:
+    build:
+      context: .
+      dockerfile: apps/mcp-morpho/Dockerfile
+    ports:
+      - "3006:3006"
+    env_file:
+      - .env
+    environment:
+      - PORT=3006
+
+  mcp-balancer:
+    build:
+      context: .
+      dockerfile: apps/mcp-balancer/Dockerfile
+    ports:
+      - "3007:3007"
+    env_file:
+      - .env
+    environment:
+      - PORT=3007
+
   postgres:
     image: postgres:17
     environment:

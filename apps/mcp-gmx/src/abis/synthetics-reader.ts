@@ -323,6 +323,22 @@ export const syntheticsReaderAbi = [
   },
   {
     type: "function",
+    name: "getOrder",
+    inputs: [
+      { name: "dataStore", type: "address" },
+      { name: "key", type: "bytes32" },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: orderPropsComponents,
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "getAccountOrders",
     inputs: [
       { name: "dataStore", type: "address" },

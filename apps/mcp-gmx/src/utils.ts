@@ -82,6 +82,18 @@ export function parseUsdPrice(price: string): bigint {
   return parseUnits(price, GMX_PRICE_DECIMALS);
 }
 
+/**
+ * Parse a human-readable USD price into GMX oracle format.
+ * Oracle prices are stored as 10^(30 - tokenDecimals), so for ETH (18 dec)
+ * "3500" becomes 3500 * 10^12.
+ */
+export function parseOraclePrice(
+  price: string,
+  indexTokenDecimals: number
+): bigint {
+  return parseUnits(price, GMX_PRICE_DECIMALS - indexTokenDecimals);
+}
+
 export function formatUsdPrice(price: bigint): string {
   return formatUnits(price, GMX_PRICE_DECIMALS);
 }
@@ -191,6 +203,23 @@ export function leverageToSizeDeltaUsd(
   // tokenAmount (raw) * price already gives USD in 30-decimal precision.
   const collateralUsd = collateralAmount * collateralPrice;
   return (collateralUsd * BigInt(Math.round(leverage * 10))) / 10n;
+}
+
+// ── Account Order List Key ──────────────────────────────────────────
+
+const ACCOUNT_ORDER_LIST = keccak256(
+  encodeAbiParameters([{ type: "string" }], ["ACCOUNT_ORDER_LIST"])
+);
+
+export function accountOrderListKey(
+  account: `0x${string}`
+): `0x${string}` {
+  return keccak256(
+    encodeAbiParameters(
+      [{ type: "bytes32" }, { type: "address" }],
+      [ACCOUNT_ORDER_LIST, account]
+    )
+  );
 }
 
 // ── Position Key ────────────────────────────────────────────────────

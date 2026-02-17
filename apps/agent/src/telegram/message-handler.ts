@@ -183,6 +183,8 @@ export async function handleMessage(
       `• <b>Hyperliquid</b> — Perpetual trading and liquidity\n` +
       `• <b>Convex</b> — Stake CRV/CVX, manage vlCVX locks, claim rewards\n` +
       `• <b>Curve</b> — Stablecoin swaps and liquidity pools\n` +
+      `• <b>Morpho</b> — Lending, borrowing, collateral management, and vault deposits\n` +
+      `• <b>Balancer</b> — Pool discovery, token swaps, and liquidity provision (V3)\n` +
       `• <b>Token Swaps</b> — Swap tokens across supported DEXs\n\n` +
       `<b>Supported Chains</b>\n` +
       `Ethereum, Polygon, Arbitrum, Optimism, Base, Avalanche, Solana\n\n` +
@@ -365,7 +367,10 @@ export async function handleMessage(
                 if (active) active.lastToolName = toolLabel;
                 if (isMcpTool) {
                   try {
-                    await ctx.reply(`Working on it — running: ${toolLabel}...`);
+                    const input = block.input as Record<string, unknown> | undefined;
+                    const chain = input?.chain ?? input?.network;
+                    const suffix = chain ? ` (${chain})` : "";
+                    await ctx.reply(`Working on it — running: ${toolLabel}${suffix}...`);
                   } catch {
                     // Non-critical, ignore send failures for status messages
                   }

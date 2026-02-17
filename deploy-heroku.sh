@@ -11,6 +11,8 @@ set -e
 #   - mcp-gmx:          MCP server (web dyno)      → grep3-mcp-gmx
 #   - mcp-curve:        MCP server (web dyno)      → grep3-mcp-curve
 #   - mcp-convex:       MCP server (web dyno)      → grep3-mcp-convex
+#   - mcp-morpho:       MCP server (web dyno)      → grep3-mcp-morpho
+#   - mcp-balancer:     MCP server (web dyno)      → grep3-mcp-balancer
 #
 # Each service deploys to its own Heroku app.
 #
@@ -27,7 +29,7 @@ set -e
 
 # Service definitions (bash 3 compatible, no associative arrays)
 # Format: service_name:heroku_app:dyno_type:dockerfile
-ALL_SERVICES="telegram-bot:grep3-wallet-bot:bot:apps/agent/Dockerfile mcp-aave:grep3-mcp-aave:web:apps/mcp-aave/Dockerfile mcp-swap:grep3-mcp-swap:web:apps/mcp-swap/Dockerfile mcp-hyperliquid:grep3-mcp-hyperliquid:web:apps/mcp-hyperliquid/Dockerfile mcp-gmx:grep3-mcp-gmx:web:apps/mcp-gmx/Dockerfile mcp-curve:grep3-mcp-curve:web:apps/mcp-curve/Dockerfile mcp-convex:grep3-mcp-convex:web:apps/mcp-convex/Dockerfile"
+ALL_SERVICES="telegram-bot:grep3-wallet-bot:bot:apps/agent/Dockerfile mcp-aave:grep3-mcp-aave:web:apps/mcp-aave/Dockerfile mcp-swap:grep3-mcp-swap:web:apps/mcp-swap/Dockerfile mcp-hyperliquid:grep3-mcp-hyperliquid:web:apps/mcp-hyperliquid/Dockerfile mcp-gmx:grep3-mcp-gmx:web:apps/mcp-gmx/Dockerfile mcp-curve:grep3-mcp-curve:web:apps/mcp-curve/Dockerfile mcp-convex:grep3-mcp-convex:web:apps/mcp-convex/Dockerfile mcp-morpho:grep3-mcp-morpho:web:apps/mcp-morpho/Dockerfile mcp-balancer:grep3-mcp-balancer:web:apps/mcp-balancer/Dockerfile"
 
 # Parse options
 SKIP_BUILD=false
@@ -64,7 +66,7 @@ get_services() {
             fi
         done
         echo "Error: Unknown service '$ONLY_SERVICE'" >&2
-        echo "Available services: telegram-bot, mcp-aave, mcp-swap, mcp-hyperliquid, mcp-gmx, mcp-curve, mcp-convex" >&2
+        echo "Available services: telegram-bot, mcp-aave, mcp-swap, mcp-hyperliquid, mcp-gmx, mcp-curve, mcp-convex, mcp-morpho, mcp-balancer" >&2
         exit 1
     else
         echo "$ALL_SERVICES"
@@ -79,7 +81,7 @@ echo ""
 if [ -n "$ONLY_SERVICE" ]; then
     echo "Service: $ONLY_SERVICE only"
 else
-    echo "Services: telegram-bot, mcp-aave, mcp-swap, mcp-hyperliquid, mcp-gmx, mcp-curve, mcp-convex"
+    echo "Services: telegram-bot, mcp-aave, mcp-swap, mcp-hyperliquid, mcp-gmx, mcp-curve, mcp-convex, mcp-morpho, mcp-balancer"
 fi
 echo ""
 

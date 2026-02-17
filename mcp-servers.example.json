@@ -23,6 +23,14 @@
     "convex": {
       "type": "http",
       "url": "http://mcp-convex:3005/mcp"
+    },
+    "morpho": {
+      "type": "http",
+      "url": "http://mcp-morpho:3006/mcp"
+    },
+    "balancer": {
+      "type": "http",
+      "url": "http://mcp-balancer:3007/mcp"
     }
   }
 }
